@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тени новой школы</title>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #08080d, #151521, #050507);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .game {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(10, 10, 18, 0.9);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 40px black;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    h1 {
+      font-size: 38px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px #7777ff;
+    }
+
+    .intro {
+      color: #cfcfe0;
+      line-height: 1.6;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin-bottom: 15px;
+    }
+
+    p {
+      font-size: 18px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    .choices {
+      margin-top: 25px;
+      display: grid;
+      gap: 14px;
+    }
+
+    button {
+      padding: 15px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: linear-gradient(135deg, #292940, #181826);
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+      text-align: left;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #3b3b5c, #202035);
+      transform: translateY(-2px);
+    }
+
+    .win {
+      color: #9ff0b7;
+      font-weight: bold;
+    }
+
+    .bad {
+      color: #ff8f8f;
+      font-weight: bold;
+    }
+
+    .restart {
+      background: linear-gradient(135deg, #4b1f2e, #251018);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="game">
+    <h1>Тени новой школы</h1>
+
+    <div class="intro">
+      Ты перешёл в новую школу. Ученики шепчутся, что здесь пропадают дети,
+      а по ночам слышны странные звуки. Директор уверяет, что всё в порядке,
+      но ты чувствуешь: что-то не так…
+    </div>
+
+    <div id="scene"></div>
+  </div>
+
+  <script>
+    const scenes = {
+      start: {
+        title: "Сцена 1. Первый день",
+        text: "Ты стоишь у входа в школу. Здание выглядит мрачновато: окна будто следят за тобой, а дверь скрипит, словно не хочет впускать. Куда направишься?",
+        choices: [
+          { text: "Зайти через главный вход", next: "hall" },
+          { text: "Обойти здание и поискать другой путь", next: "yard" }
+        ]
+      },
+
+      hall: {
+        title: "Сцена 2.1. Главный холл",
+        text: "Ты входишь в холл. Тишина. На стене висит расписание, но все уроки перепутаны: математика стоит после сна, а физкультура — в 3 часа ночи. В конце коридора мигает лампа.",
+        choices: [
+          { text: "Подойти к расписанию и попробовать разобраться", next: "schedule" },
+          { text: "Пойти к мигающей лампе", next: "lamp" }
+        ]
+      },
+
+      schedule: {
+        title: "Сцена 2.1.1. Расписание",
+        text: "Ты замечаешь, что некоторые фамилии в списке учеников перечёркнуты красным. Твоей фамилии пока нет… Но внизу приписка: «Следующий — ты».\n\nВ этот момент лампа гаснет. Ты слышишь шаги за спиной.",
+        choices: [
+          { text: "Спрятаться в ближайшем кабинете", next: "classroom" }
+        ]
+      },
+
+      lamp: {
+        title: "Сцена 2.1.2. Мигающая лампа",
+        text: "Когда ты подходишь ближе, лампа гаснет, и ты оказываешься в полной темноте. Но потом она снова загорается — и ты видишь тень на стене.\n\nОна не твоя. Тень медленно поворачивает голову в твою сторону.",
+        choices: [
+          { text: "Бежать в сторону библиотеки", next: "library" }
+        ]
+      },
+
+      yard: {
+        title: "Сцена 2.2. Задний двор",
+        text: "Ты обходишь школу и видишь заросший сад. В центре — старая статуя девочки с пустыми глазами. Одна из её рук указывает на окно третьего этажа.",
+        choices: [
+          { text: "Подняться по пожарной лестнице на третий этаж", next: "thirdFloor" },
+          { text: "Осмотреть статую внимательнее", next: "statue" }
+        ]
+      },
+
+      thirdFloor: {
+        title: "Сцена 2.2.1. Третий этаж",
+        text: "Ты попадаешь в тёмный коридор. Дверь одного из кабинетов приоткрыта, оттуда доносится шёпот.",
+        choices: [
+          { text: "Заглянуть внутрь", next: "girl" }
+        ]
+      },
+
+      statue: {
+        title: "Сцена 2.2.2. Статуя",
+        text: "Ты замечаешь, что в основании статуи есть щель. Внутри лежит ключ с биркой «Кабинет 307».",
+        choices: [
+          { text: "Найти кабинет 307", next: "room307" }
+        ]
+      },
+
+      classroom: {
+        title: "Сцена 3.1. Кабинет",
+        text: "Ты заходишь в класс и прячешься под партой. Дверь медленно открывается, и кто-то заходит. Ты видишь ноги в старых школьных туфлях. Они останавливаются у твоей парты…\n\nНо тут звонок на урок заставляет незнакомца уйти. На столе остаётся тетрадь с записями: «Они возвращаются после полуночи».",
+        choices: [
+          { text: "Дождаться полуночи", next: "midnightEnding" }
+        ]
+      },
+
+      library: {
+        title: "Сцена 3.2. Библиотека",
+        text: "Библиотека пуста, но книги на полках шевелятся, будто живые. Одна из них выпадает и раскрывается на странице с рисунком статуи из сада.\n\nПод ним надпись: «Она видит тех, кто знает».",
+        choices: [
+          { text: "Искать способ разрушить статую", next: "statueEnding" }
+        ]
+      },
+
+      girl: {
+        title: "Сцена 3.3. Девочка в старой форме",
+        text: "В кабинете сидит девочка в форме старой школы. Она поворачивается и улыбается:\n\n«Ты тоже их слышишь? Они зовут нас играть».\n\nНа её шее — следы от верёвки.",
+        choices: [
+          { text: "Спросить, как остановить это", next: "talkEnding" }
+        ]
+      },
+
+      room307: {
+        title: "Сцена 3.4. Кабинет 307",
+        text: "Кабинет заперт, но твой ключ подходит. Внутри — старый журнал с именами пропавших учеников. Твоё имя уже вписано карандашом.\n\nНа стене — карта школы с отмеченным местом: «Подвал».",
+        choices: [
+          { text: "Направиться в подвал", next: "badEnding" }
+        ]
+      },
+
+      midnightEnding: {
+        title: "Сцена 5.1. Финал с полночью",
+        text: "В 00:00 тени в коридорах обретают форму. Они шепчут: «Останься с нами».\n\nНо ты вспоминаешь слова из тетради и кричишь: «Я не боюсь!».\n\nТени рассеиваются. Школа выглядит обычной, а на утро директор говорит, что ты — первый, кто «прошёл испытание».\n\nПобеда!",
+        endingClass: "win",
+        choices: []
+      },
+
+      statueEnding: {
+        title: "Сцена 5.2. Финал со статуей",
+        text: "Ты находишь в подвале инструмент и разбиваешь статую. Тени исчезают, а шёпот смолкает.\n\nУтром ученики рассказывают, что видели тебя во сне — как ты их спас.\n\nПобеда!",
+        endingClass: "win",
+        choices: []
+      },
+
+      talkEnding: {
+        title: "Сцена 5.3. Финал с разговором",
+        text: "Девочка из кабинета даёт тебе старую ленту:\n\n«Обвяжи её вокруг запястья — они не смогут тебя забрать».\n\nТы так и делаешь. На следующий день школа выглядит нормально, но ты знаешь правду.\n\nПобеда — альтернативный финал!",
+        endingClass: "win",
+        choices: []
+      },
+
+      badEnding: {
+        title: "Сцена 5.4. Неудачный финал",
+        text: "Ты спускаешься в подвал без подготовки. Дверь захлопывается, а тени окружают тебя.\n\nПоследнее, что ты слышишь: «Теперь ты один из нас».\n\nКонец игры.",
+        endingClass: "bad",
+        choices: []
+      }
+    };
+
+    const sceneElement = document.getElementById("scene");
+
+    function showScene(sceneId) {
+      const scene = scenes[sceneId];
+
+      sceneElement.innerHTML = `
+        <h2>${scene.title}</h2>
+        <p class="${scene.endingClass || ""}">${scene.text}</p>
+        <div class="choices"></div>
+      `;
+
+      const choicesElement = sceneElement.querySelector(".choices");
+
+      scene.choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.textContent = choice.text;
+        button.onclick = () => showScene(choice.next);
+        choicesElement.appendChild(button);
+      });
+
+      if (scene.choices.length === 0) {
+        const restartButton = document.createElement("button");
+        restartButton.textContent = "Начать заново";
+        restartButton.className = "restart";
+        restartButton.onclick = () => showScene("start");
+        choicesElement.appendChild(restartButton);
+      }
+    }
+
+    showScene("start");
+  </script>
+</body>
+</html>
